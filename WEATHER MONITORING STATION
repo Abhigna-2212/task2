@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Monitoring Station</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #weather-form {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather Monitoring Station</h1>
+    <form id="weather-form">
+        <label for="temperature">Temperature:</label>
+        <input type="number" id="temperature" name="temperature" step="0.1" required>
+        <label for="humidity">Humidity:</label>
+        <input type="number" id="humidity" name="humidity" step="0.1" required>
+        <label for="pressure">Pressure:</label>
+        <input type="number" id="pressure" name="pressure" step="0.1" required>
+        <button type="submit">Add Weather Data</button>
+    </form>
+    <h2>Weather Data</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Temperature</th>
+                <th>Humidity</th>
+                <th>Pressure</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id="weather-data">
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById('weather-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const temperature = document.getElementById('temperature').value;
+            const humidity = document.getElementById('humidity').value;
+            const pressure = document.getElementById('pressure').value;
+
+            fetch('/weather', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ temperature, humidity, pressure })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    loadWeatherData();
+                } else {
+                    alert('Error adding weather data');
+                }
+            });
+        });
+
+        function loadWeatherData() {
+            fetch('/weather')
+                .then(response => response.json())
+                .then(data => {
+                    const weatherDataElement = document.getElementById('weather-data');
+                    weatherDataElement.innerHTML = '';
+                    data.forEach(entry => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${entry.temperature}</td>
+                            <td>${entry.humidity}</td>
+                            <td>${entry.pressure}</td>
+                            <td>${entry.timestamp}</td>
+                        `;
+                        weatherDataElement.appendChild(row);
+                    });
+                });
+        }
+
+        loadWeatherData();
+    </script>
+</body>
+</html>
